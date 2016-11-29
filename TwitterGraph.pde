@@ -5,7 +5,7 @@ class TwitterGraph {
 
   // we use a HashMap to store the nodes, because we frequently have to find them by their id,
   // which is easy to do with a HashMap
-  HashMap nodeMap = new HashMap();
+  ConcurrentHashMap nodeMap = new ConcurrentHashMap();
 
   // we use an ArrayList because it is faster to append with new springs
   ArrayList springs = new ArrayList();
@@ -18,14 +18,15 @@ class TwitterGraph {
   Node loadingNode = null;
 
 
+  ArrayList anchors = new ArrayList(); 
 
 
   // default parameters
   int resultCount = 10;
 
-  float springLength = 100;
-  float springStiffness = 0.4;
-  float springDamping = 0.9;
+  float springLength = 2;
+  float springStiffness = 0.1;
+  float springDamping = 0.10;
 
   PFont font;
   float textsize;
@@ -33,8 +34,8 @@ class TwitterGraph {
   float lineAlpha = 100;
   color linkColor = color(160);
 
-  boolean showText = true;
-  boolean showRolloverText = true;
+  boolean showText = false;
+  boolean showRolloverText = false;
   boolean showRolloverNeighbours = false;
 
 
@@ -68,7 +69,7 @@ class TwitterGraph {
 
 
   //-------------MAIN NODE ADD & REMOVE----------------
-  Node addMainNode(String theID, float theX, float theY) {
+  Node addNode(String theID, float theX, float theY) {
     // check if the node is already there
     Node findNode = (Node) nodeMap.get(theID);
 
@@ -78,130 +79,39 @@ class TwitterGraph {
       newNode.setID(theID);
       //Add Node Details to HashMap
       nodeMap.put(theID, newNode);
+      addSpringToCenter(theID);
       return newNode;
     } else {
       return null;
     }
   }
-
-  void removeNode(Node theNode) {
-    int i;
-    // remove springs from/to theNode
-    for (i = springs.size()-1; i >= 0; i--) {
-      Spring s = (Spring) springs.get(i);
-      if (s.fromNode == theNode || s.toNode == theNode) {
-        TwitterNode from = (TwitterNode) s.fromNode;
-        TwitterNode to = (TwitterNode) s.toNode;
-        springs.remove(i);
-      }
-    }
-
-    // remove theNode
-    nodeMap.remove(theNode.id);
-
-    // remove single nodes
-    Iterator iter = nodeMap.entrySet().iterator();
-    while (iter.hasNext ()) {
-      Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
-      if (getSpringIndexByNode(node) < 0 && !node.wasClicked) {
-        iter.remove();
-      }
-    }
-  }
-
-  //------------------TWITTER NODE ADD & REMOVE-------------------
-  Node addTwitterNode(String theID, float theX, float theY) {
+  
+    //-------------MAIN NODE ADD & REMOVE----------------
+  Node addHashtagNode(String hashtag, float theR, float theAngle) {
     // check if the node is already there
-    Node findNode = (Node) nodeMap.get(theID);
-
+    Node findNode = (Node) nodeMap.get(hashtag);
+    float[] points = GenerativeDesign.polarToCartesian(theR, theAngle);
     //IF it isn't add it
     if (findNode == null) {
-      Node newNode = new TwitterNode(this, theX, theY);
-      newNode.setID(theID);
+      Node newNode = new MainNode(this, points[0], points[1], true);
+      newNode.setID(hashtag);
       //Add Node Details to HashMap
-      nodeMap.put(theID, newNode);
+      nodeMap.put(hashtag, newNode);
+     // addSpringToCircle(hashtag, points[0], points[1]);
       return newNode;
     } else {
       return null;
     }
   }
 
-  void removeNode(Node theNode) {
-    int i;
-    // remove springs from/to theNode
-    for (i = springs.size()-1; i >= 0; i--) {
-      Spring s = (Spring) springs.get(i);
-      if (s.fromNode == theNode || s.toNode == theNode) {
-        TwitterNode from = (TwitterNode) s.fromNode;
-        TwitterNode to = (TwitterNode) s.toNode;
-        springs.remove(i);
-      }
-    }
-
-    // remove theNode
-    nodeMap.remove(theNode.id);
-
-    // remove single nodes
-    Iterator iter = nodeMap.entrySet().iterator();
-    while (iter.hasNext ()) {
-      Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
-      if (getSpringIndexByNode(node) < 0 && !node.wasClicked) {
-        iter.remove();
-      }
-    }
-  }
 
 
-
-  //---------HASHTAG NODE ADD & REMOVE -------------
-  Node addHashtagNode(String theID, float theX, float theY) {
-    // check if node is already there
-    Node findNode = (Node) nodeMap.get(theID);
-
-    if (findNode == null) {
-      // create a new node
-      Node newNode = new HashtagNode(this, theX, theY);
-      newNode.setID(theID);
-      nodeMap.put(theID, newNode);
-      return newNode;
-    } else {
-      return null;
-    }
-  }
-
-  void removeNode(Node theNode) {
-    int i;
-    // remove springs from/to theNode
-    for (i = springs.size()-1; i >= 0; i--) {
-      Spring s = (Spring) springs.get(i);
-      if (s.fromNode == theNode || s.toNode == theNode) {
-        TwitterNode from = (TwitterNode) s.fromNode;
-        TwitterNode to = (TwitterNode) s.toNode;
-        springs.remove(i);
-      }
-    }
-
-    // remove theNode
-    nodeMap.remove(theNode.id);
-
-    // remove single nodes
-    Iterator iter = nodeMap.entrySet().iterator();
-    while (iter.hasNext ()) {
-      Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
-      if (getSpringIndexByNode(node) < 0 && !node.wasClicked) {
-        iter.remove();
-      }
-    }
-  }
 
 
   Spring addSpring(String fromID, String toID) {
-    TwitterNode fromNode, toNode; 
-    fromNode = (TwitterNode) nodeMap.get(fromID);
-    toNode = (TwitterNode) nodeMap.get(toID);
+    MainNode fromNode, toNode; 
+    fromNode = (MainNode) nodeMap.get(fromID);
+    toNode = (MainNode) nodeMap.get(toID);
 
     // if one of the nodes do not exist, stop creating spring
     if (fromNode==null) return null;
@@ -219,34 +129,98 @@ class TwitterGraph {
 
 
 
+  Spring addSpringToCenter(String id) {
+    MainNode node;
+    node = (MainNode) nodeMap.get(id);
+
+    if (node==null) return null;
+
+    if (getSpring(node, dummyCenterNode) ==null) {
+      Spring newSpring = new Spring(node, dummyCenterNode, springLength, springStiffness, 0.9);
+      springs.add(newSpring);
+      return newSpring;
+    }
+
+    return null;
+  }
+  
+   Spring addSpringToCircle(String id, float rad, float theta) {
+    MainNode node;
+    node = (MainNode) nodeMap.get(id);
+    PVector polar = new PVector(rad, theta);
+    PVector carte = GenerativeDesign.polarToCartesian(polar);
+    Node anchor = new Node(carte);
+    if (node==null) return null;
+
+    if (getSpring(node, anchor) ==null) {
+      Spring newSpring = new Spring(node, anchor, rad, springStiffness, 0.9);
+      springs.add(newSpring);
+      return newSpring;
+    }
+
+    return null;
+  }
+
+
+
+
+  ///REMOVE NODE
+
+  void removeNode(Node theNode, int type) {
+    int i;
+    // remove springs from/to theNode
+    for (i = springs.size()-1; i >= 0; i--) {
+      Spring s = (Spring) springs.get(i);
+      if (s.fromNode == theNode || s.toNode == theNode) {
+        springs.remove(i);
+      }
+    }
+
+    // remove theNode from the HASHMAP
+    nodeMap.remove(theNode.id);
+
+    // remove single nodes
+    Iterator iter = nodeMap.entrySet().iterator();
+
+    while (iter.hasNext ()) {
+      Map.Entry me = (Map.Entry) iter.next();
+      MainNode node = (MainNode) me.getValue();
+      if (getSpringIndexByNode(node) < 0) {
+        iter.remove();
+      }
+    }
+  }
+
   Node getNodeByID(String theID) {
     Node node = (Node) nodeMap.get(theID); 
     return node;
   }
 
 
-  Node getNodeByScreenPos(float theX, float theY) {
-    float mx = (theX-width/2)/zoom-offset.x;
-    float my = (theY-height/2)/zoom-offset.y;
 
-    return getNodeByPos(mx, my);
-  }
+  ////FOR CLICK I THINK
+  //  Node getNodeByScreenPos(float theX, float theY) {
+  //    float mx = (theX-width/2)/zoom-offset.x;
+  //    float my = (theY-height/2)/zoom-offset.y;
+
+  //    return getNodeByPos(mx, my);
+  //  }
 
 
-  Node getNodeByPos(float theX, float theY) {
-    Node selectedNode = null;
-    Iterator i = nodeMap.entrySet().iterator();
-    while (i.hasNext ()) {
-      Map.Entry me = (Map.Entry) i.next();
-      TwitterNode checkNode = (TwitterNode) me.getValue();
+  //Node getNodeByPos(float theX, float theY) {
+  //  Node selectedNode = null;
+  //  Iterator i = nodeMap.entrySet().iterator();
+  //  while (i.hasNext ()) {
+  //    Map.Entry me = (Map.Entry) i.next();
+  //    TwitterNode checkNode = (TwitterNode) me.getValue();
 
-      float d = dist(theX, theY, checkNode.x, checkNode.y);
-      if (d < max(checkNode.diameter/2, minClickDiameter)) {
-        selectedNode = (Node) checkNode;
-      }
-    }
-    return selectedNode;
-  }
+  //    float d = dist(theX, theY, checkNode.x, checkNode.y);
+  //    if (d < max(checkNode.diameter/2, minClickDiameter)) {
+  //      selectedNode = (Node) checkNode;
+  //    }
+  //  }
+  //  return selectedNode;
+  //}
 
   int getSpringIndexByNode(Node theNode) {
     for (int i = 0; i < springs.size(); i++) {
@@ -354,7 +328,7 @@ class TwitterGraph {
     return (s);
   }
 
-
+  //-------------------------------------------
   void update() {
     // use this function also to get actual width and heigth of the graph
     minX = Float.MAX_VALUE; 
@@ -365,14 +339,20 @@ class TwitterGraph {
     // make an Array out of the values in nodeMap
     Node[] nodes = (Node[]) nodeMap.values().toArray(new Node[0]);
 
+
+    //Apply forces
     for (int i = 0; i < nodes.length; i++) {
       nodes[i].attract(nodes);
     }
+
+    //Add springs
     for (int i = 0; i < springs.size(); i++) {
       Spring s = (Spring) springs.get(i);
       if (s == null) break;
       s.update();
     }
+
+    //Call the update method on individual nodes
     for (int i = 0; i < nodes.length; i++) {
       nodes[i].update();
 
@@ -382,14 +362,12 @@ class TwitterGraph {
       maxY = max(nodes[i].y, maxY);
     }
 
+
     if (selectedNode != null) {
       // when dragging a node
       selectedNode.x = (mouseX - width/2)/zoom - offset.x;
       selectedNode.y = (mouseY - height/2)/zoom - offset.y;
-    } 
-
-    // check if there is a node hovered    
-    rolloverNode = getNodeByScreenPos(mouseX, mouseY);
+    }
   }
 
 
@@ -421,23 +399,24 @@ class TwitterGraph {
     scale(zoom);
     translate(offset.x, offset.y);
 
+
+    //THIS LOADS THE DATA IN THE ORIGINAL
     Iterator iter = nodeMap.entrySet().iterator();
     while (iter.hasNext ()) {
       Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
-
-      node.loaderLoop();
+      //MainNode node = (MainNode) me.getValue();
+      //node.loaderLoop();
     }
 
-    colorMode(HSB, 360, 100, 100, 100);
 
     // draw springs
     for (int i = 0; i < springs.size(); i++) {
       Spring s = (Spring) springs.get(i);
       if (s == null) break;
-      stroke(hue(linkColor), saturation(linkColor), brightness(linkColor), lineAlpha);
+      stroke(0);
       strokeWeight(lineWeight);
-      drawArrow((TwitterNode) s.fromNode, (TwitterNode) s.toNode);
+      //drawArrow((MainNode) s.fromNode,  s.toNode);
+      line(s.getFromNode().x, s.getFromNode().y, s.getToNode().x, s.getToNode().y);
       noStroke();
     }
 
@@ -447,25 +426,61 @@ class TwitterGraph {
     iter = nodeMap.entrySet().iterator();
     while (iter.hasNext ()) {
       Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
+
+      MainNode node = (MainNode) me.getValue();
       node.draw();
+      node.drawLabel();
+      // removeNode(node);
     }
 
     // draw node labels 
     iter = nodeMap.entrySet().iterator();
     while (iter.hasNext ()) {
       Map.Entry me = (Map.Entry) iter.next();
-      TwitterNode node = (TwitterNode) me.getValue();
+      MainNode node = (MainNode) me.getValue();
       node.drawLabel();
     }
 
     popMatrix();
 
     popStyle();
+
+    //DRAW THE CENTRE NODE
+    drawCenter();
   }
 
+  void removeNodes() {
+    Iterator iter = nodeMap.entrySet().iterator();
 
-  void drawArrow(TwitterNode n1, TwitterNode n2) {
+    iter = nodeMap.entrySet().iterator();
+    while (iter.hasNext ()) {
+      Map.Entry me = (Map.Entry) iter.next();
+
+      MainNode node = (MainNode) me.getValue();
+      removeNode(node,1);
+    }
+  }
+
+  void drawCenter() {
+
+    float d;
+    // while loading draw grey ring around node
+    d = nodeDiameter;
+
+
+    // white ring between center circle and link ring
+
+    fill(255, 131, 0);
+    ellipse(width/2, height/2, d, d);
+
+    // main dot
+    d = (nodeDiameter - 10);
+    pushStyle();
+    fill(255);
+    ellipse(width/2, height/2, d, d);
+    popStyle();
+  }
+  void drawArrow(MainNode n1, MainNode n2) {
 
     PVector d = new PVector(n2.x - n1.x, n2.y - n1.y);
     float margin1 = n1.diameter/2.0 + 3 + lineWeight/2;
@@ -504,83 +519,5 @@ class TwitterGraph {
       }
     }
     return sb.toString();
-  } 
-
-
-
-  boolean mousePressed() {
-    clickedNode = (TwitterNode) getNodeByScreenPos(mouseX, mouseY);
-
-    if (clickedNode != null) {
-      if (mouseButton == RIGHT) {
-        selectedNode = clickedNode;
-
-        // double click right -> open page in browser
-        if (mouseEvent.getClickCount()==2) {
-          link("http://en.Twitter.org/wiki/"+encodeURL(clickedNode.id));
-        }
-        return true;
-      }
-    } 
-
-    return false;
-  }
-
-
-  boolean mouseReleased() {
-    if (selectedNode != null) {
-      selectedNode = null;
-    }
-
-
-    if (clickedNode != null) {
-
-      if (lastMouseButton == LEFT) {
-
-        if (keyPressed && keyCode == SHIFT) {
-          // delete clicked node
-          removeNode(clickedNode);
-          return true;
-        } else if (!keyPressed) {
-          clickedNode.wasClicked = true;
-          // load links from clicked node
-          if (clickedNode.availableLinksLoaded) {
-            int addedNodes = 0;
-            for (int i = 0; i < clickedNode.availableLinks.size(); i++) {
-              if (addedNodes >= resultCount) break;
-
-              String title = (String) clickedNode.availableLinks.get(i);
-
-              Node addedNode = addNode(title, clickedNode.x+random(-5, 5), clickedNode.y+random(-5, 5));
-              if (addedNode != null) addedNodes++;
-
-              Spring addedSpring = addSpring(clickedNode.id, title);
-            }
-          }
-          return true;
-        } else if (keyPressed && keyCode == ALT) {
-          clickedNode.wasClicked = true;
-          // load links to clicked node
-          if (clickedNode.availableBacklinksLoaded ) {
-
-            int addedNodes = 0;
-            for (int i = 0; i < clickedNode.availableBacklinks.size(); i++) {
-              if (addedNodes >= resultCount) break;
-
-              String title = (String) clickedNode.availableBacklinks.get(i);
-
-              //if (myTwitterGraph.getNodeByID(title) == null) {
-              Node addedNode = addNode(title, clickedNode.x+random(-5, 5), clickedNode.y+random(-5, 5));
-              if (addedNode != null) addedNodes++;
-
-              Spring addedSpring = addSpring(title, clickedNode.id);
-            }
-          }
-          return true;
-        }
-      }
-    } 
-
-    return false;
   }
 }
