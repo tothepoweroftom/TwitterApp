@@ -5,7 +5,6 @@ class OuterRing {
 
   int segments = 14;
 
-  color[] cols = {#f3b700, #faa300, #ff6201, #f63e02, #e57c04, #985F99, #9684A1, #AAACB0, #B6C9BB, #BFEDC1, #71A2B6, #60B2E5, #53F4FF, #E7D7C1, #A78A7F, #735751 };
   OuterRing(int radius, int x, int y) {
     this.radius = radius; 
     this.x = x;

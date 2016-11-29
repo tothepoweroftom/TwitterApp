@@ -16,12 +16,15 @@ class MainNode extends Node {
   int locationID;
 
   boolean hashtag = false;
+  
 
   color ranCol;
 
   int type;
 
-  ArrayList<String> hashtags;
+  StringList hashtags;
+  
+  Status twitterStatus;
 
 
 
@@ -34,14 +37,14 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph) {
     super();
     graph = theGraph;
-    hashtags = new ArrayList<String>();
+    //hashtags = new ArrayList<String>();
     init();
   }
 
   MainNode(TwitterGraph theGraph, float theX, float theY) {
     super(theX, theY);
-    ranCol = color(random(255), random(255), random(255));
-    hashtags = new ArrayList<String>();
+    ranCol = cols[int(random(15))];
+
 
     graph = theGraph;
     init();
@@ -49,8 +52,8 @@ class MainNode extends Node {
 
   MainNode(TwitterGraph theGraph, float theX, float theY, boolean hash) {
     super(theX, theY);
-    ranCol = color(random(255), random(255), random(255));
-    hashtags = new ArrayList<String>();
+    ranCol = cols[int(random(15))];
+
     this.hashtag = true;
     graph = theGraph;
     init();
@@ -58,8 +61,8 @@ class MainNode extends Node {
 
   MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
     super(theX, theY, theZ);
-    ranCol = color(random(255), random(255), random(255));
-    hashtags = new ArrayList<String>();
+    ranCol = cols[int(random(15))];
+
 
     graph = theGraph;
     init();
@@ -70,7 +73,7 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph, PVector theVector) {
     super(theVector);
     graph = theGraph;
-    ranCol = color(random(255), random(255), random(255));
+    ranCol = cols[int(random(15))];
 
     init();
   }
@@ -103,8 +106,13 @@ class MainNode extends Node {
     d = diameter;
 
     // randomly coloured circle
-    fill(100, 100, 100);
-    ellipse(x, y, d, d);
+    if (hashtag) {
+      fill(180, 180);
+      ellipse(x, y, d, d);
+    } else {
+      fill(ranCol);
+      ellipse(x, y, d, d);
+    }
 
     popStyle();
   }
@@ -125,50 +133,13 @@ class MainNode extends Node {
       textFont(graph.font, ts);
 
       float tw = textWidth(id);
-      fill(230, 80);
+      fill(255, 80);
       rect(x+(diameter/2+4), y-(ts/2), (tw+3), (ts+3));
       // if (graph.isRollover(this) && graph.showRolloverText) {
       fill(0);
       // }
       text(id, x+(diameter/2+20)*tfactor, y+6*tfactor);
-      // draw text for rolloverNode
-      //if (graph.showText) {
-      //  if (wasClicked || (graph.isRollover(this) && graph.showRolloverText)) {
-      //    activationTime = graph.getMillis();
-
-      //    float ts = textsize/pow(graph.zoom, 0.5) *tfactor;
-      //    textFont(graph.font, ts);
-
-      //    float tw = textWidth(id);
-      //    fill(255, 80);
-      //    rect(x+ (diameter/2+4)*tfactor, y-(ts/2)*tfactor, (tw+3)*tfactor, (ts+3)*tfactor);
-      //    fill(80);
-      //    if (graph.isRollover(this) && graph.showRolloverText) {
-      //      fill(0);
-      //    }
-      //    text(id, x+(diameter/2+5)*tfactor, y+6*tfactor);
-      //  } else {
-      //    // draw text for all nodes that are linked to the rollover node
-      //    if (wasClicked || graph.showRolloverNeighbours) {
-      //      if (graph.isRolloverNeighbour(this)) {
-      //        activationTime = graph.getMillis();
-      //      }
-      //    }
-
-      //    int dt = graph.getMillis() - activationTime;
-      //    if (dt < 10000) {
-      //      float ts = textsize/pow(graph.zoom, 0.5)*tfactor;
-      //      textFont(graph.font, ts);
-
-      //      float tw = textWidth(id);
-      //      float a = min(3*(1-dt/10000.0), 1) * 100;
-      //      fill(255, a*0.8);
-      //      rect(x+(diameter/2+4)*tfactor, y-(ts/2)*tfactor, (tw+3)*tfactor, (ts+3)*tfactor);
-      //      fill(80, a);
-      //      text(id, x+(diameter/2+5)*tfactor, y+6*tfactor);
-      //    }
-      //  }
-      //}
+    
     }
   }
 

@@ -24,14 +24,14 @@ class TwitterGraph {
   // default parameters
   int resultCount = 10;
 
-  float springLength = 2;
-  float springStiffness = 0.1;
+  float springLength = 10;
+  float springStiffness = 0.21;
   float springDamping = 0.10;
 
   PFont font;
   float textsize;
   float lineWeight = 1;
-  float lineAlpha = 100;
+  float lineAlpha = 180;
   color linkColor = color(160);
 
   boolean showText = false;
@@ -85,8 +85,8 @@ class TwitterGraph {
       return null;
     }
   }
-  
-    //-------------MAIN NODE ADD & REMOVE----------------
+
+  //-------------MAIN NODE ADD & REMOVE----------------
   Node addHashtagNode(String hashtag, float theR, float theAngle) {
     // check if the node is already there
     Node findNode = (Node) nodeMap.get(hashtag);
@@ -97,7 +97,7 @@ class TwitterGraph {
       newNode.setID(hashtag);
       //Add Node Details to HashMap
       nodeMap.put(hashtag, newNode);
-     // addSpringToCircle(hashtag, points[0], points[1]);
+      // addSpringToCircle(hashtag, points[0], points[1]);
       return newNode;
     } else {
       return null;
@@ -127,6 +127,25 @@ class TwitterGraph {
     return null;
   }
 
+  Spring addWeakSpring(String fromID, String toID) {
+    MainNode fromNode, toNode; 
+    fromNode = (MainNode) nodeMap.get(fromID);
+    toNode = (MainNode) nodeMap.get(toID);
+
+    // if one of the nodes do not exist, stop creating spring
+    if (fromNode==null) return null;
+    if (toNode==null) return null;
+
+    if (getSpring(fromNode, toNode) == null) {
+      // create a new spring
+      Spring newSpring = new Spring(fromNode, toNode, springLength, 0, 0.9);
+      springs.add(newSpring);
+      return newSpring;
+    }
+
+    return null;
+  }
+
 
 
   Spring addSpringToCenter(String id) {
@@ -143,8 +162,8 @@ class TwitterGraph {
 
     return null;
   }
-  
-   Spring addSpringToCircle(String id, float rad, float theta) {
+
+  Spring addSpringToCircle(String id, float rad, float theta) {
     MainNode node;
     node = (MainNode) nodeMap.get(id);
     PVector polar = new PVector(rad, theta);
@@ -413,7 +432,9 @@ class TwitterGraph {
     for (int i = 0; i < springs.size(); i++) {
       Spring s = (Spring) springs.get(i);
       if (s == null) break;
-      stroke(0);
+      MainNode from = (MainNode) s.getFromNode();
+      stroke(from.ranCol);
+
       strokeWeight(lineWeight);
       //drawArrow((MainNode) s.fromNode,  s.toNode);
       line(s.getFromNode().x, s.getFromNode().y, s.getToNode().x, s.getToNode().y);
@@ -457,7 +478,7 @@ class TwitterGraph {
       Map.Entry me = (Map.Entry) iter.next();
 
       MainNode node = (MainNode) me.getValue();
-      removeNode(node,1);
+      removeNode(node, 1);
     }
   }
 

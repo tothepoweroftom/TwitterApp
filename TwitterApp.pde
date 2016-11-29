@@ -36,7 +36,7 @@ String hashtags[];
 
 float zoom = 0.2;
 
-float nodeDiameter = 50;
+float nodeDiameter = 30;
 
 int CANVAS_WIDTH = 1280;
 
@@ -55,6 +55,8 @@ float c = 1;
 String[] symmb;
 boolean twitFlag = false;
 
+//GLOBAL COLOR PALETTE
+color[] cols = {#f3b700, #faa300, #ff6201, #f63e02, #e57c04, #985F99, #9684A1, #AAACB0, #B6C9BB, #BFEDC1, #71A2B6, #60B2E5, #53F4FF, #E7D7C1, #A78A7F, #735751 };
 
 
 TwitterStream twitterStream;
@@ -76,7 +78,7 @@ void setup() {
   dummyCenterNode = new Node(0, 0);
 
   myTwitterGraph = new TwitterGraph();
-oR = new OuterRing(height-height/20, width/2, height/2);
+  oR = new OuterRing(height-height/20, width/2, height/2);
 
 
   //  println(myTwitterGraph.toString());
@@ -97,7 +99,10 @@ oR = new OuterRing(height-height/20, width/2, height/2);
     .setSize(200, 40)
     .setFont(font)
     .setFocus(true)
-    .setColor(color(255))
+    .setColorBackground(color(255))
+    .setColor(color(0))
+    .setLabel("Filter")
+
     ;
 }
 
@@ -128,9 +133,8 @@ void draw() {
       popStyle();
     }
   }
-  
-      oR.display();
 
+  oR.display();
 }
 
 void keyPressed() {
@@ -145,8 +149,8 @@ void keyPressed() {
   if (key == 't' || key == 'T') {
     twitFlag = !twitFlag;
   }
-  
-    if (key == 'c' || key == 'C') {
+
+  if (key == 'c' || key == 'C') {
     myTwitterGraph.removeNodes();
   }
 
@@ -196,13 +200,13 @@ StatusListener listener = new StatusListener() {
     int s = second();
 
     global = myTwitterGraph.addNode(name, random(-5, 5), random(-5, 5));
-    parseHashtag(text);
+    parseHashtag(text, global);
     String loc = status.getUser().getLocation();
-    
-    if(loc !=null){
-   // println(loc);
+
+    if (loc !=null) {
+      // println(loc);
     }
-    
+
     String tzone = status.getUser().getTimeZone();
     println(tzone);
 
@@ -255,7 +259,7 @@ public void input(String theText) {
   myTwitterGraph.removeNodes();
 }
 
-void parseHashtag(String tweetText) {
+void parseHashtag(String tweetText, Node callingNode) {
   String patternStr = "(?:\\s|\\A)[##]+([A-Za-z0-9-_]+)";
   Pattern pattern = Pattern.compile(patternStr);
   Matcher matcher = pattern.matcher(tweetText);
@@ -268,8 +272,9 @@ void parseHashtag(String tweetText) {
     String search = result.replace("#", "");
     // println(search);
     //Add hashtag node to circle
-   Node node = myTwitterGraph.addHashtagNode("#"+search, 280, random(360));
-   
+    Node node = myTwitterGraph.addHashtagNode("#"+search, 280, random(360));
+    myTwitterGraph.addWeakSpring("#"+search,global.id);
+
     //String searchHTML="<a href='http://search.twitter.com/search?q=" + search + "'>" + result + "</a>"
     //tweetText = tweetText.replace(result, searchHTML);
   }
