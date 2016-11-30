@@ -62,18 +62,15 @@ class Tweet {
         String resp = response.toString();
         if (resp.contains("Positive")) {
           result = color(0, 255, 0);
-          count++;
-          println("Pos" + count);
+
         }
         if (resp.contains("Negative")) {
           result = color(255, 0, 0);
-          count++;
-          println("neg" + count);
+
         }
         if (resp.contains("Neutral")) {
           result = color(25);
-          count++;
-          println("neutral" + count);
+
         }
         response.setLength(0);
       }

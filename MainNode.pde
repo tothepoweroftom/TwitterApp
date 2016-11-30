@@ -14,12 +14,13 @@ class MainNode extends Node {
   float nodeStrength = -10;
   float nodeDamping = 0.2;
   int locationID;
-  
-  
+
+
   boolean labelFlag = true;
   boolean hashtag = false;
+  boolean displayed = true;
   int numHashtags =0;
-  
+
   color ranCol;
 
   int type;
@@ -29,12 +30,13 @@ class MainNode extends Node {
   Status twitterStatus;
 
   int numConnections;
-  
+
   int lifeTime = 100000;
-  
+  int fadeCounter = 1000;
+
   boolean strongConnection = false;
-  
-  
+
+
 
 
 
@@ -60,8 +62,8 @@ class MainNode extends Node {
     graph = theGraph;
     init();
   }
-  
-    MainNode(TwitterGraph theGraph, float theX, float theY, color sentiment) {
+
+  MainNode(TwitterGraph theGraph, float theX, float theY, color sentiment) {
     super(theX, theY);
     ranCol = sentiment;
     this.numConnections = 0;
@@ -119,29 +121,35 @@ class MainNode extends Node {
 
   ///
   void draw() {
-    
-    
-    pushStyle();
-    //colorMode(HSB, 360, 100, 100);
-    float d;
-    // while loading draw grey ring around node
-    d = diameter;
 
-    // randomly coloured circle
-    if (hashtag) {
-      d = diameter + 10*(numConnections-1);
+    if (displayed) {
+      pushStyle();
+      //colorMode(HSB, 360, 100, 100);
+      float d;
+      // while loading draw grey ring around node
+      d = diameter;
 
-      fill(255, 180);
-      ellipse(x, y, d, d);
-    } else {
-      fill(ranCol);
-      ellipse(x, y, d, d);
+      // randomly coloured circle
+      if (hashtag) {
+        d = diameter + 10*(numConnections-1);
+
+        fill(255, 180);
+        ellipse(x, y, d, d);
+      } else {
+        fill(ranCol);
+        ellipse(x, y, d, d);
+      }
+
+      popStyle();
+
+      if (numConnections<=2) {
+        lifeTime-=100;
+      }
     }
 
-    popStyle();
-    
-    if(numConnections<=2){
-    lifeTime-=100;
+    if (lifeTime==0) {
+
+      triggerFadeOut();
     }
   }
 
@@ -188,5 +196,33 @@ class MainNode extends Node {
   float getTheta() {
 
     return GenerativeDesign.cartesianToPolar(this.x, this.y)[1];
+  }
+
+  void triggerFadeOut() {
+    displayed = false;
+    if (fadeCounter!=0) {
+      float alpha = map(fadeCounter, 1000, 0, 180, 0);
+      pushStyle();
+      //colorMode(HSB, 360, 100, 100);
+      float d;
+      // while loading draw grey ring around node
+      d = diameter;
+
+      // randomly coloured circle
+      if (hashtag) {
+        d = diameter + 10*(numConnections-1);
+
+        fill(255, alpha);
+        ellipse(x, y, d, d);
+      } else {
+        fill(ranCol);
+        ellipse(x, y, d, d);
+      }
+
+      popStyle();
+      fadeCounter-=10;
+    } else {
+      graph.removeNode(this);
+    }
   }
 }
