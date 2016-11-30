@@ -3,16 +3,15 @@ class MainNode extends Node {
   TwitterGraph graph;
 
 
-  // look of the node
-  color nodeColor;
+  // look of the central node
   color ringColor = color(255, 131, 0);
-  float nodeDiameter = 15;
+  float nodeDiameter = 10;
   // size of the displayed text
-  float textsize = 22;
+  float textsize = 25;
   // behaviour parameters
-  float nodeRadius = 50;
-  float nodeStrength = -10;
-  float nodeDamping = 0.2;
+  float nodeRadius = 60;
+  float nodeStrength = -1;
+  float nodeDamping = 0.3;
   int locationID;
 
 
@@ -79,6 +78,10 @@ class MainNode extends Node {
     graph = theGraph;
     init();
     this.numConnections = 0;
+
+    if (hash) {
+      this.nodeRadius = 200;
+    }
   }
 
   MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
@@ -134,7 +137,8 @@ class MainNode extends Node {
         d = diameter + 10*(numConnections-1);
 
         fill(255, 180);
-        ellipse(x, y, d, d);
+        rectMode(CENTER);
+        rect(x,y,20,200);
       } else {
         fill(ranCol);
         ellipse(x, y, d, d);
@@ -237,6 +241,4 @@ class MainNode extends Node {
       graph.removeNode(this);
     }
   }
-
-
 }

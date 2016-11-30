@@ -61,16 +61,19 @@ class Tweet {
         //println("The server response is " + response);
         String resp = response.toString();
         if (resp.contains("Positive")) {
+          pushMatrix();
           result = this.positive();
-
+          popMatrix();
         }
         if (resp.contains("Negative")) {
+          pushMatrix();
           result = this.negative();
-
+          popMatrix();
         }
         if (resp.contains("Neutral")) {
+          pushMatrix();
           result = this.neutral();
-
+          popMatrix();
         }
         response.setLength(0);
       }
@@ -89,8 +92,8 @@ class Tweet {
 
     return result;
   }
-  
-    color positive() {
+
+  color positive() {
     float hue, sat, bright;
     colorMode(HSB, 255);
 
@@ -98,6 +101,7 @@ class Tweet {
     hue = random(90, 110);
     sat = random(100, 200);
     bright = 50 + hue;
+
     return color(hue, sat, bright);
   } 
 
@@ -121,6 +125,6 @@ class Tweet {
     hue = random(20, 120);
     sat = random(0, 70);
     bright = 200;
-   return color(hue, sat, bright);
+    return color(hue, sat, bright);
   }
 }
