@@ -147,16 +147,13 @@ class MainNode extends Node {
       }
     }
 
-    if (lifeTime==0) {
 
-      triggerFadeOut();
-    }
   }
 
 
   void drawLabel() {
 
-    if (hashtag && labelFlag==true) {
+    if (hashtag && labelFlag==true && displayed) {
       // draw text
       textAlign(LEFT);
       rectMode(CORNER);
@@ -200,6 +197,8 @@ class MainNode extends Node {
 
   void triggerFadeOut() {
     displayed = false;
+    
+    //Node itself
     if (fadeCounter!=0) {
       float alpha = map(fadeCounter, 1000, 0, 180, 0);
       pushStyle();
@@ -220,9 +219,36 @@ class MainNode extends Node {
       }
 
       popStyle();
+      
+      //TEXT LABEL
+            // draw text
+      textAlign(LEFT);
+      rectMode(CORNER);
+      float tfactor = 0.5;
+
+      activationTime = graph.getMillis();
+
+      float ts = textsize/pow(graph.zoom, 0.5) *tfactor;
+      textFont(graph.font, ts);
+
+
+      // fill(255, 10);
+      pushMatrix();
+
+      // rect(x+(diameter/2+4), y-(ts/2), (tw+3), (ts+3));
+      // if (graph.isRollover(this) && graph.showRolloverText) {
+      fill(0, alpha);
+      // }
+      //rotate(getTheta());
+      // translate(x,y);
+      text(id, x+(d/2+20)*tfactor, y+6*tfactor);
+
+      popMatrix();
       fadeCounter-=10;
     } else {
       graph.removeNode(this);
     }
+    
+    
   }
 }

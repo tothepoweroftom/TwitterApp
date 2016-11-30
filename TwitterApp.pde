@@ -335,7 +335,5 @@ void parseHashtag(String tweetText, Node callingNode) {
     //node.numConnections++;
     hashCount++;
 
-    //String searchHTML="<a href='http://search.twitter.com/search?q=" + search + "'>" + result + "</a>"
-    //tweetText = tweetText.replace(result, searchHTML);
   }
 }

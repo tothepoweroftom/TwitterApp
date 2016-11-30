@@ -470,7 +470,7 @@ class TwitterGraph {
       node.draw();
       node.drawLabel();
       
-      if(node.lifeTime==0){removeNode(node);}
+      if(node.lifeTime==0){node.triggerFadeOut();}
       // removeNode(node);
     }
 
