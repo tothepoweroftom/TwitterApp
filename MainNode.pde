@@ -6,25 +6,28 @@ class MainNode extends Node {
   // look of the node
   color nodeColor;
   color ringColor = color(255, 131, 0);
-  float nodeDiameter = 20;
+  float nodeDiameter = 15;
   // size of the displayed text
   float textsize = 22;
   // behaviour parameters
   float nodeRadius = 50;
-  float nodeStrength = -1;
+  float nodeStrength = -10;
   float nodeDamping = 0.2;
   int locationID;
-
-  boolean hashtag = false;
   
+  boolean labelFlag = true;
+  boolean hashtag = false;
+
 
   color ranCol;
 
   int type;
 
   StringList hashtags;
-  
+
   Status twitterStatus;
+
+  int numConnections;
 
 
 
@@ -38,12 +41,14 @@ class MainNode extends Node {
     super();
     graph = theGraph;
     //hashtags = new ArrayList<String>();
+    this.numConnections = 0;
     init();
   }
 
   MainNode(TwitterGraph theGraph, float theX, float theY) {
     super(theX, theY);
     ranCol = cols[int(random(15))];
+    this.numConnections = 0;
 
 
     graph = theGraph;
@@ -53,15 +58,16 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph, float theX, float theY, boolean hash) {
     super(theX, theY);
     ranCol = cols[int(random(15))];
-
     this.hashtag = true;
     graph = theGraph;
     init();
+    this.numConnections = 0;
   }
 
   MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
     super(theX, theY, theZ);
     ranCol = cols[int(random(15))];
+    this.numConnections = 0;
 
 
     graph = theGraph;
@@ -74,6 +80,7 @@ class MainNode extends Node {
     super(theVector);
     graph = theGraph;
     ranCol = cols[int(random(15))];
+    this.numConnections = 0;
 
     init();
   }
@@ -107,7 +114,9 @@ class MainNode extends Node {
 
     // randomly coloured circle
     if (hashtag) {
-      fill(180, 180);
+      d = diameter + 10*(numConnections-1);
+
+      fill(255, 180);
       ellipse(x, y, d, d);
     } else {
       fill(ranCol);
@@ -120,12 +129,13 @@ class MainNode extends Node {
 
   void drawLabel() {
 
-    if (hashtag) {
+    if (hashtag && labelFlag==true) {
       // draw text
       textAlign(LEFT);
       rectMode(CORNER);
       float tfactor = 0.5;
 
+      float d = diameter + 5*(numConnections-1);
 
       activationTime = graph.getMillis();
 
@@ -133,13 +143,18 @@ class MainNode extends Node {
       textFont(graph.font, ts);
 
       float tw = textWidth(id);
-      fill(255, 80);
-      rect(x+(diameter/2+4), y-(ts/2), (tw+3), (ts+3));
+      // fill(255, 10);
+      pushMatrix();
+
+      // rect(x+(diameter/2+4), y-(ts/2), (tw+3), (ts+3));
       // if (graph.isRollover(this) && graph.showRolloverText) {
       fill(0);
       // }
-      text(id, x+(diameter/2+20)*tfactor, y+6*tfactor);
-    
+      //rotate(getTheta());
+      // translate(x,y);
+      text(id, x+(d/2+20)*tfactor, y+6*tfactor);
+
+      popMatrix();
     }
   }
 
@@ -149,5 +164,10 @@ class MainNode extends Node {
 
   int getLocationID() {
     return this.locationID;
+  }
+
+  float getTheta() {
+
+    return GenerativeDesign.cartesianToPolar(this.x, this.y)[1];
   }
 }

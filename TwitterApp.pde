@@ -29,16 +29,18 @@ Node global;
 OuterRing oR;
 
 String keywords[] = {
-  "Innovation", "Technology"
+  "Innovation"
 };  
 
 String hashtags[];
 
 float zoom = 0.2;
 
-float nodeDiameter = 30;
+float nodeDiameter = 20;
 
 int CANVAS_WIDTH = 1280;
+int hashCount = 0;
+int tweetCount =0;
 
 
 Node dummyCenterNode;
@@ -99,7 +101,7 @@ void setup() {
     .setSize(200, 40)
     .setFont(font)
     .setFocus(true)
-    .setColorBackground(color(255))
+    .setColorBackground(color(220))
     .setColor(color(0))
     .setLabel("Filter")
 
@@ -109,7 +111,7 @@ void setup() {
 
 void draw() {
 
-  background(255);
+  background(220);
   textFont(font, 30);
 
   // ------ update and draw graph ------
@@ -125,11 +127,24 @@ void draw() {
       popStyle();
       //println(symmb[1]);
       pushStyle();
-      fill(0, 80);
+      fill(0, 180);
       text(symmb[0], 20, height/4, 200, 400);
-      fill(255, 131, 0, 80);
+      textSize(34);
+      fill(0, 200);
+      text("#Tweets", 20, height/2+height/8, 200, 400);
+      textSize(30);
+      fill(0, 180);
+      text(str(tweetCount), 20, height/2+height/8 + 30, 200, 400);
+      text("#Hashtags", 20, height/2+height/4, 200, 400);
+      textSize(30);
+      fill(0, 180);
+      text(str(hashCount), 20, height/2+height/4 + 30, 200, 400);
+      fill(255, 131, 0, 180);
       text(symmb[1], width - width/6, height/4, 200, 400);
-
+      fill(180, 180);
+      if (symmb[2]!=null) {
+        text(symmb[2], width-width/6, height/6, 200, 400);
+      }
       popStyle();
     }
   }
@@ -152,6 +167,13 @@ void keyPressed() {
 
   if (key == 'c' || key == 'C') {
     myTwitterGraph.removeNodes();
+    hashCount = 0;
+    tweetCount = 0;
+  }
+  
+    if (key == 'l' || key == 'L') {
+    myTwitterGraph.displayLabels();
+
   }
 
   println(zoom);
@@ -199,17 +221,24 @@ StatusListener listener = new StatusListener() {
     int m = millis();
     int s = second();
 
+    int favourite = status.getFavoriteCount();
+    int retweet = status.getRetweetCount();
+
+    int total = favourite+retweet;
+    println(total);
+
     global = myTwitterGraph.addNode(name, random(-5, 5), random(-5, 5));
     parseHashtag(text, global);
     String loc = status.getUser().getLocation();
+    // println("Hashmap size:" + myTwitterGraph
 
     if (loc !=null) {
       // println(loc);
     }
 
     String tzone = status.getUser().getTimeZone();
-    println(tzone);
-
+    //println(tzone);
+    tweetCount++;
 
 
 
@@ -217,6 +246,7 @@ StatusListener listener = new StatusListener() {
     if (symmb != null) {
       symmb[0] = text;
       symmb[1] = name;
+      symmb[2] = tzone;
       twitFlag = true;
     }
   }
@@ -272,8 +302,10 @@ void parseHashtag(String tweetText, Node callingNode) {
     String search = result.replace("#", "");
     // println(search);
     //Add hashtag node to circle
-    Node node = myTwitterGraph.addHashtagNode("#"+search, 280, random(360));
-    myTwitterGraph.addWeakSpring("#"+search,global.id);
+    MainNode node =(MainNode) myTwitterGraph.addHashtagNode("#"+search, 280, random(360));
+    myTwitterGraph.addWeakSpring("#"+search, global.id);
+    //node.numConnections++;
+    hashCount++;
 
     //String searchHTML="<a href='http://search.twitter.com/search?q=" + search + "'>" + result + "</a>"
     //tweetText = tweetText.replace(result, searchHTML);

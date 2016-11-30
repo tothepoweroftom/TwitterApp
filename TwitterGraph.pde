@@ -1,5 +1,3 @@
-
-
 //TwitterGraph controls everything the nodes need and their relationships to each other.
 class TwitterGraph {
 
@@ -30,8 +28,8 @@ class TwitterGraph {
 
   PFont font;
   float textsize;
-  float lineWeight = 1;
-  float lineAlpha = 180;
+  float lineWeight =1;
+  float lineAlpha = 200;
   color linkColor = color(160);
 
   boolean showText = false;
@@ -85,21 +83,24 @@ class TwitterGraph {
       return null;
     }
   }
-
-  //-------------MAIN NODE ADD & REMOVE----------------
+  
+    //-------------MAIN NODE ADD & REMOVE----------------
   Node addHashtagNode(String hashtag, float theR, float theAngle) {
     // check if the node is already there
-    Node findNode = (Node) nodeMap.get(hashtag);
+    MainNode findNode = (MainNode) nodeMap.get(hashtag);
     float[] points = GenerativeDesign.polarToCartesian(theR, theAngle);
     //IF it isn't add it
     if (findNode == null) {
-      Node newNode = new MainNode(this, points[0], points[1], true);
+      MainNode newNode = new MainNode(this, points[0], points[1], true);
       newNode.setID(hashtag);
+      newNode.numConnections++;
       //Add Node Details to HashMap
       nodeMap.put(hashtag, newNode);
-      // addSpringToCircle(hashtag, points[0], points[1]);
+     // addSpringToCircle(hashtag, points[0], points[1]);
       return newNode;
     } else {
+      findNode.numConnections++;
+      findNode.nodeStrength--;
       return null;
     }
   }
@@ -126,8 +127,8 @@ class TwitterGraph {
 
     return null;
   }
-
-  Spring addWeakSpring(String fromID, String toID) {
+  
+    Spring addWeakSpring(String fromID, String toID) {
     MainNode fromNode, toNode; 
     fromNode = (MainNode) nodeMap.get(fromID);
     toNode = (MainNode) nodeMap.get(toID);
@@ -162,8 +163,8 @@ class TwitterGraph {
 
     return null;
   }
-
-  Spring addSpringToCircle(String id, float rad, float theta) {
+  
+   Spring addSpringToCircle(String id, float rad, float theta) {
     MainNode node;
     node = (MainNode) nodeMap.get(id);
     PVector polar = new PVector(rad, theta);
@@ -434,7 +435,6 @@ class TwitterGraph {
       if (s == null) break;
       MainNode from = (MainNode) s.getFromNode();
       stroke(from.ranCol);
-
       strokeWeight(lineWeight);
       //drawArrow((MainNode) s.fromNode,  s.toNode);
       line(s.getFromNode().x, s.getFromNode().y, s.getToNode().x, s.getToNode().y);
@@ -478,7 +478,19 @@ class TwitterGraph {
       Map.Entry me = (Map.Entry) iter.next();
 
       MainNode node = (MainNode) me.getValue();
-      removeNode(node, 1);
+      removeNode(node,1);
+    }
+  }
+
+  void displayLabels() {
+    Iterator iter = nodeMap.entrySet().iterator();
+
+    iter = nodeMap.entrySet().iterator();
+    while (iter.hasNext ()) {
+      Map.Entry me = (Map.Entry) iter.next();
+
+      MainNode node = (MainNode) me.getValue();
+      node.labelFlag = !node.labelFlag;
     }
   }
 
@@ -501,6 +513,7 @@ class TwitterGraph {
     ellipse(width/2, height/2, d, d);
     popStyle();
   }
+  
   void drawArrow(MainNode n1, MainNode n2) {
 
     PVector d = new PVector(n2.x - n1.x, n2.y - n1.y);
@@ -525,20 +538,5 @@ class TwitterGraph {
 
   float getWidth() {
     return 1;
-  }
-
-  String encodeURL(String name) {
-    StringBuffer sb = new StringBuffer();
-    byte[] utf8 = name.getBytes();
-    for (int i = 0; i < utf8.length; i++) {
-      int value = utf8[i] & 0xff;
-      if (value < 33 || value > 126) {
-        sb.append('%');
-        sb.append(hex(value, 2));
-      } else {
-        sb.append((char) value);
-      }
-    }
-    return sb.toString();
   }
 }
