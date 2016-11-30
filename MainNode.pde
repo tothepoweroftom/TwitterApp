@@ -15,10 +15,11 @@ class MainNode extends Node {
   float nodeDamping = 0.2;
   int locationID;
   
+  
   boolean labelFlag = true;
   boolean hashtag = false;
-
-
+  int numHashtags =0;
+  
   color ranCol;
 
   int type;
@@ -28,6 +29,12 @@ class MainNode extends Node {
   Status twitterStatus;
 
   int numConnections;
+  
+  int lifeTime = 100000;
+  
+  boolean strongConnection = false;
+  
+  
 
 
 
@@ -106,6 +113,8 @@ class MainNode extends Node {
 
   ///
   void draw() {
+    
+    
     pushStyle();
     //colorMode(HSB, 360, 100, 100);
     float d;
@@ -124,6 +133,10 @@ class MainNode extends Node {
     }
 
     popStyle();
+    
+    if(numConnections<=2){
+    lifeTime-=100;
+    }
   }
 
 

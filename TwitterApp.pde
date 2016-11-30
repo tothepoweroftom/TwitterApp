@@ -1,4 +1,3 @@
-
 import generativedesign.*;
 import processing.data.XML;
 import processing.pdf.*;
@@ -9,12 +8,16 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
+import java.io.*;
+import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.Map;
-
 import controlP5.*;
+import processing.data.*;
+
+
 
 ControlP5 cp5;
 
@@ -29,7 +32,7 @@ Node global;
 OuterRing oR;
 
 String keywords[] = {
-  "Innovation"
+  "Technology"
 };  
 
 String hashtags[];
@@ -58,11 +61,28 @@ String[] symmb;
 boolean twitFlag = false;
 
 //GLOBAL COLOR PALETTE
-color[] cols = {#f3b700, #faa300, #ff6201, #f63e02, #e57c04, #985F99, #9684A1, #AAACB0, #B6C9BB, #BFEDC1, #71A2B6, #60B2E5, #53F4FF, #E7D7C1, #A78A7F, #735751 };
+color[] cols = {#f3b700, #faa300, #ff6201, #f63e02, #e57c04, #985F99 };
+color[] negCols = { #AAACB0, #B6C9BB, #BFEDC1, #71A2B6, #60B2E5, #53F4FF, #E7D7C1, #A78A7F, #735751 };
+color[] neutralCols = {#000000, #ffffff };
 
-
+//Internet stuff
 TwitterStream twitterStream;
+HttpURLConnection conn = null;
 
+StringBuilder response = new StringBuilder();
+processing.data.JSONObject ezm = new processing.data.JSONObject();
+
+static class Util {
+  public static String streamToString(InputStream is) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+    String line;
+    while ((line = rd.readLine()) != null) {
+      sb.append(line);
+    }
+    return sb.toString();
+  }
+}
 
 
 //mouseInteraction
@@ -104,7 +124,6 @@ void setup() {
     .setColorBackground(color(220))
     .setColor(color(0))
     .setLabel("Filter")
-
     ;
 }
 
@@ -195,7 +214,8 @@ void openTwitterStream() {
 
 
 
-  filtered.track(keywords[0]);
+  filtered.track(keywords);
+  //filtered.language("English");
 
   twitterStream.addListener(listener);
 

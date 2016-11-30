@@ -186,7 +186,7 @@ class TwitterGraph {
 
   ///REMOVE NODE
 
-  void removeNode(Node theNode, int type) {
+  void removeNode(Node theNode) {
     int i;
     // remove springs from/to theNode
     for (i = springs.size()-1; i >= 0; i--) {
@@ -451,6 +451,8 @@ class TwitterGraph {
       MainNode node = (MainNode) me.getValue();
       node.draw();
       node.drawLabel();
+      
+      if(node.lifeTime==0){removeNode(node);}
       // removeNode(node);
     }
 
@@ -478,7 +480,7 @@ class TwitterGraph {
       Map.Entry me = (Map.Entry) iter.next();
 
       MainNode node = (MainNode) me.getValue();
-      removeNode(node,1);
+      removeNode(node);
     }
   }
 
