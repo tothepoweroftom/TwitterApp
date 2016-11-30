@@ -54,7 +54,16 @@ class MainNode extends Node {
 
   MainNode(TwitterGraph theGraph, float theX, float theY) {
     super(theX, theY);
-    ranCol = cols[int(random(15))];
+    this.numConnections = 0;
+
+
+    graph = theGraph;
+    init();
+  }
+  
+    MainNode(TwitterGraph theGraph, float theX, float theY, color sentiment) {
+    super(theX, theY);
+    ranCol = sentiment;
     this.numConnections = 0;
 
 
@@ -64,7 +73,6 @@ class MainNode extends Node {
 
   MainNode(TwitterGraph theGraph, float theX, float theY, boolean hash) {
     super(theX, theY);
-    ranCol = cols[int(random(15))];
     this.hashtag = true;
     graph = theGraph;
     init();
@@ -73,7 +81,6 @@ class MainNode extends Node {
 
   MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
     super(theX, theY, theZ);
-    ranCol = cols[int(random(15))];
     this.numConnections = 0;
 
 
@@ -86,7 +93,6 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph, PVector theVector) {
     super(theVector);
     graph = theGraph;
-    ranCol = cols[int(random(15))];
     this.numConnections = 0;
 
     init();

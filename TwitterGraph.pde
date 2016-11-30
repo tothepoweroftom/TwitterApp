@@ -67,6 +67,24 @@ class TwitterGraph {
 
 
   //-------------MAIN NODE ADD & REMOVE----------------
+  Node addNode(String theID, float theX, float theY, color sentiment) {
+    // check if the node is already there
+    Node findNode = (Node) nodeMap.get(theID);
+
+    //IF it isn't add it
+    if (findNode == null) {
+      Node newNode = new MainNode(this, theX, theY, sentiment);
+      newNode.setID(theID);
+      //Add Node Details to HashMap
+      nodeMap.put(theID, newNode);
+      addSpringToCenter(theID);
+      return newNode;
+    } else {
+      return null;
+    }
+  }
+  
+    //-------------MAIN NODE ADD & REMOVE----------------
   Node addNode(String theID, float theX, float theY) {
     // check if the node is already there
     Node findNode = (Node) nodeMap.get(theID);

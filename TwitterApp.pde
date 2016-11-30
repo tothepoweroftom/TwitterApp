@@ -27,7 +27,7 @@ TwitterGraph myTwitterGraph;
 
 PApplet root = this;
 
-Node global;
+MainNode global;
 
 OuterRing oR;
 
@@ -67,6 +67,15 @@ color[] neutralCols = {#000000, #ffffff };
 
 //Internet stuff
 TwitterStream twitterStream;
+String tweet;
+float x;
+float y;
+int amountOfTweets;
+ArrayList<String> tweets = new ArrayList<String>();
+ArrayList<Float> tweetFills = new ArrayList<Float>();
+ArrayList colors = new ArrayList();
+ArrayList<String> words = new ArrayList();
+
 HttpURLConnection conn = null;
 
 StringBuilder response = new StringBuilder();
@@ -103,9 +112,7 @@ void setup() {
   oR = new OuterRing(height-height/20, width/2, height/2);
 
 
-  //  println(myTwitterGraph.toString());
   symmb = new String[180];
-
   hashtags = new String[100];
 
   font = createFont("blanch_condensed.ttf", 22);
@@ -113,6 +120,7 @@ void setup() {
   openTwitterStream();
 
 
+  URL url = null;
 
   cp5 = new ControlP5(this);
 
@@ -176,9 +184,7 @@ void keyPressed() {
   if (keyCode == UP) zoom *= 1.05;
   if (keyCode == DOWN) zoom /= 1.05;
   zoom = constrain(zoom, 0.05, 1);
-  if (key == 'a' || key == 'A') {
-    myTwitterGraph.addNode(str(random(1000)), random(10, 20), random(10, 20));
-  }
+
 
   if (key == 't' || key == 'T') {
     twitFlag = !twitFlag;
@@ -189,10 +195,9 @@ void keyPressed() {
     hashCount = 0;
     tweetCount = 0;
   }
-  
-    if (key == 'l' || key == 'L') {
-    myTwitterGraph.displayLabels();
 
+  if (key == 'l' || key == 'L') {
+    myTwitterGraph.displayLabels();
   }
 
   println(zoom);
@@ -240,14 +245,11 @@ StatusListener listener = new StatusListener() {
     String text = status.getText();
     int m = millis();
     int s = second();
+    
+        
+ 
 
-    int favourite = status.getFavoriteCount();
-    int retweet = status.getRetweetCount();
-
-    int total = favourite+retweet;
-    println(total);
-
-    global = myTwitterGraph.addNode(name, random(-5, 5), random(-5, 5));
+    global =(MainNode) myTwitterGraph.addNode(name, random(-5, 5), random(-5, 5));
     parseHashtag(text, global);
     String loc = status.getUser().getLocation();
     // println("Hashmap size:" + myTwitterGraph
@@ -269,6 +271,12 @@ StatusListener listener = new StatusListener() {
       symmb[2] = tzone;
       twitFlag = true;
     }
+
+
+   Tweet newTweet = new Tweet(name, text);
+    color sentiment = newTweet.getColor();
+    global.ranCol = sentiment;
+
   }
 
   //@Override

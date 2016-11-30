@@ -2,7 +2,7 @@ class Tweet {
   color sentiment;
   String user;
   String text;
-
+  int count = 0;
   Tweet (String userName, String tweetText) {
     sentiment = getColor();
     user = userName;
@@ -36,7 +36,7 @@ class Tweet {
         conn.setDoOutput(true); //we will send stuff
 
         OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-        wr.write("txt=hello and what happens if I put a full tweet? great if it works!"); //ezm is my JSON object containing the api commands
+        wr.write("txt=" + text); //ezm is my JSON object containing the api commands
         wr.flush();
         wr.close();
       } 
@@ -58,17 +58,24 @@ class Tweet {
         while ((responseSingle = rd.readLine()) != null) {
           response.append(responseSingle);
         }
-        println("The server response is " + response);
+        //println("The server response is " + response);
         String resp = response.toString();
         if (resp.contains("Positive")) {
           result = color(0, 255, 0);
+          count++;
+          println("Pos" + count);
         }
         if (resp.contains("Negative")) {
           result = color(255, 0, 0);
+          count++;
+          println("neg" + count);
         }
         if (resp.contains("Neutral")) {
-          result = color(255);
+          result = color(25);
+          count++;
+          println("neutral" + count);
         }
+        response.setLength(0);
       }
       catch (IOException e) {
         println("hm");
