@@ -61,15 +61,15 @@ class Tweet {
         //println("The server response is " + response);
         String resp = response.toString();
         if (resp.contains("Positive")) {
-          result = color(0, 255, 0);
+          result = this.positive();
 
         }
         if (resp.contains("Negative")) {
-          result = color(255, 0, 0);
+          result = this.negative();
 
         }
         if (resp.contains("Neutral")) {
-          result = color(25);
+          result = this.neutral();
 
         }
         response.setLength(0);
@@ -88,5 +88,39 @@ class Tweet {
     }
 
     return result;
+  }
+  
+    color positive() {
+    float hue, sat, bright;
+    colorMode(HSB, 255);
+
+    //for positive tweets
+    hue = random(90, 110);
+    sat = random(100, 200);
+    bright = 50 + hue;
+    return color(hue, sat, bright);
+  } 
+
+  color negative() {
+    float hue, sat, bright;
+    colorMode(HSB, 255);
+    //for negative tweets
+    hue = random(-18, 20);
+    bright = 200 + abs(hue);
+    sat = random(100, 255);
+    if (hue<0) { 
+      hue = 255 + hue;
+    };
+    return color(hue, sat, bright);
+  }
+
+  color neutral() {
+    float hue, sat, bright;
+    colorMode(HSB, 255);
+    //for neutral tweets
+    hue = random(20, 120);
+    sat = random(0, 70);
+    bright = 200;
+   return color(hue, sat, bright);
   }
 }

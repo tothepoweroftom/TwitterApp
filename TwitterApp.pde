@@ -29,7 +29,6 @@ PApplet root = this;
 
 MainNode global;
 
-OuterRing oR;
 
 String keywords[] = {
   "Technology"
@@ -109,7 +108,6 @@ void setup() {
   dummyCenterNode = new Node(0, 0);
 
   myTwitterGraph = new TwitterGraph();
-  oR = new OuterRing(height-height/20, width/2, height/2);
 
 
   symmb = new String[180];
@@ -149,10 +147,7 @@ void draw() {
     if (symmb.length != 0) {
       pushStyle();
       fill(0);
-      //nvCirc.drawSymbolsByRadius(symmb[1], 500);
-      //nvCirc2.drawSymbolsByRadius(symmb[0], 800);
       popStyle();
-      //println(symmb[1]);
       pushStyle();
       fill(0, 180);
       text(symmb[0], 20, height/4, 200, 400);
@@ -176,7 +171,6 @@ void draw() {
     }
   }
 
-  oR.display();
 }
 
 void keyPressed() {

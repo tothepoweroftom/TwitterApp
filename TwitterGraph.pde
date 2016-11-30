@@ -28,7 +28,7 @@ class TwitterGraph {
 
   PFont font;
   float textsize;
-  float lineWeight =1;
+  float lineWeight =0.5;
   float lineAlpha = 200;
   color linkColor = color(160);
 
