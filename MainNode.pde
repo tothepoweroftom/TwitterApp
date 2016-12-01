@@ -5,7 +5,7 @@ class MainNode extends Node {
 
   // look of the central node
   color ringColor = color(255, 131, 0);
-  float nodeDiameter = 10;
+  float nodeDiameter = 16;
   // size of the displayed text
   float textsize = 25;
   // behaviour parameters
@@ -14,14 +14,16 @@ class MainNode extends Node {
   float nodeDamping = 0.3;
   int locationID;
 
-
+//Flags to control
   boolean labelFlag = true;
   boolean hashtag = false;
   boolean displayed = true;
   int numHashtags =0;
 
+  //Node color variable
   color ranCol;
-
+  
+  //REDUNDANT
   int type;
 
   StringList hashtags;
@@ -137,8 +139,7 @@ class MainNode extends Node {
         d = diameter + 10*(numConnections-1);
 
         fill(255, 180);
-        rectMode(CENTER);
-        rect(x,y,20,200);
+        ellipse(x, y, d, d);
       } else {
         fill(ranCol);
         ellipse(x, y, d, d);
