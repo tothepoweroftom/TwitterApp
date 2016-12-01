@@ -2,19 +2,18 @@ class MainNode extends Node {
   // reference to the force directed graph
   TwitterGraph graph;
 
-
   // look of the central node
   color ringColor = color(255, 131, 0);
   float nodeDiameter = 16;
   // size of the displayed text
   float textsize = 25;
   // behaviour parameters
-  float nodeRadius = 60;
+  float nodeRadius = 100;
   float nodeStrength = -1;
   float nodeDamping = 0.3;
   int locationID;
 
-//Flags to control
+  //Flags to control
   boolean labelFlag = true;
   boolean hashtag = false;
   boolean displayed = true;
@@ -22,7 +21,7 @@ class MainNode extends Node {
 
   //Node color variable
   color ranCol;
-  
+
   //REDUNDANT
   int type;
 
@@ -32,7 +31,7 @@ class MainNode extends Node {
 
   int numConnections;
 
-  int lifeTime = 100000;
+  int lifeTime = fadeOutTime;
   int fadeCounter = 1000;
 
   boolean strongConnection = false;
@@ -58,8 +57,6 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph, float theX, float theY) {
     super(theX, theY);
     this.numConnections = 0;
-
-
     graph = theGraph;
     init();
   }
@@ -68,8 +65,6 @@ class MainNode extends Node {
     super(theX, theY);
     ranCol = sentiment;
     this.numConnections = 0;
-
-
     graph = theGraph;
     init();
   }
@@ -86,6 +81,8 @@ class MainNode extends Node {
     }
   }
 
+
+  //3D initializer
   MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
     super(theX, theY, theZ);
     this.numConnections = 0;
@@ -105,6 +102,8 @@ class MainNode extends Node {
     init();
   }
 
+
+
   //INITIALIZE PHYSICAL PARAMETERS
   void init() {
     activationTime = millis();
@@ -113,7 +112,7 @@ class MainNode extends Node {
     setDamping(nodeDamping);
     setStrength(nodeStrength);
 
-    //Not display radius
+    //Not display radius - used for mouse interaction
     setRadius(nodeRadius);
   }
 
@@ -127,30 +126,46 @@ class MainNode extends Node {
   ///
   void draw() {
 
+
+    //If the display flag is true.
     if (displayed) {
       pushStyle();
-      //colorMode(HSB, 360, 100, 100);
       float d;
       // while loading draw grey ring around node
       d = diameter;
 
-      // randomly coloured circle
+      // hashtag drawing code.
       if (hashtag) {
-        d = diameter + 10*(numConnections-1);
-
-        fill(255, 180);
-        ellipse(x, y, d, d);
+        drawHashtagNode();
       } else {
-        fill(ranCol);
-        ellipse(x, y, d, d);
+        drawTweetNode();
       }
 
       popStyle();
 
+
+      //Make 
       if (numConnections<=2) {
         lifeTime-=100;
+      } else {
+       lifeTime = fadeOutTime; 
       }
     }
+  }
+
+  void drawHashtagNode() {
+    float d = diameter + 10*(numConnections-1);
+    float alpha = map(lifeTime, fadeOutTime, 0, 255, 0);
+    fill(255, alpha);
+    ellipse(x, y, d, d);
+  }
+
+  void drawTweetNode() {
+    float d = diameter;
+    float alpha = map(lifeTime, fadeOutTime, 0, 255, 0);
+
+    fill(ranCol, alpha);
+    ellipse(x, y, d, d);
   }
 
 
@@ -170,18 +185,11 @@ class MainNode extends Node {
       textFont(graph.font, ts);
 
       float tw = textWidth(id);
-      // fill(255, 10);
-      pushMatrix();
 
-      // rect(x+(diameter/2+4), y-(ts/2), (tw+3), (ts+3));
-      // if (graph.isRollover(this) && graph.showRolloverText) {
-      fill(0);
-      // }
-      //rotate(getTheta());
-      // translate(x,y);
+      fill(255);
+
       text(id, x+(d/2+20)*tfactor, y+6*tfactor);
 
-      popMatrix();
     }
   }
 

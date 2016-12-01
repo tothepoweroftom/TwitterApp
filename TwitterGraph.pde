@@ -28,7 +28,7 @@ class TwitterGraph {
 
   PFont font;
   float textsize;
-  float lineWeight =0.5;
+  float lineWeight =1;
   float lineAlpha = 200;
   color linkColor = color(160);
 
@@ -470,7 +470,7 @@ class TwitterGraph {
       node.draw();
       node.drawLabel();
       
-      if(node.lifeTime==0){node.triggerFadeOut();}
+      if(node.lifeTime==0){removeNode(node);}
       // removeNode(node);
     }
 
@@ -520,15 +520,14 @@ class TwitterGraph {
     // while loading draw grey ring around node
     d = nodeDiameter;
 
-
+    pushStyle();
+     colorMode(RGB);
     // white ring between center circle and link ring
-
     fill(255, 131, 0);
     ellipse(width/2, height/2, d, d);
 
     // main dot
     d = (nodeDiameter - 10);
-    pushStyle();
     fill(255);
     ellipse(width/2, height/2, d, d);
     popStyle();

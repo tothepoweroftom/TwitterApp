@@ -42,6 +42,8 @@ String hashtags[];
 int CANVAS_WIDTH = 1280;
 float zoom = 0.2;
 
+int fadeOutTime = 100000;
+
 
 //Global Counters
 int hashCount = 0;
@@ -122,7 +124,7 @@ void setup() {
 
 void draw() {
 
-  background(220);
+  background(0);
   textFont(font, 30);
 
   // ------ update and draw graph ------
