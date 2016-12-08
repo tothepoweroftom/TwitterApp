@@ -4,7 +4,11 @@ class MainNode extends Node {
 
   // look of the central node
   color ringColor = color(255, 131, 0);
+
+  // EDITED
   float nodeDiameter = 16;
+  float savedDiameter = nodeDiameter;
+
   // size of the displayed text
   float textsize = 25;
   // behaviour parameters
@@ -17,6 +21,7 @@ class MainNode extends Node {
   boolean labelFlag = true;
   boolean hashtag = false;
   boolean displayed = true;
+  boolean isHighlighted = false;
   int numHashtags =0;
 
   //Node color variable
@@ -32,9 +37,11 @@ class MainNode extends Node {
   int numConnections;
 
   int lifeTime = fadeOutTime;
-  int fadeCounter = 1000;
+  int fadeCounter = 0;
 
   boolean strongConnection = false;
+  
+  String text;
 
 
 
@@ -44,6 +51,8 @@ class MainNode extends Node {
   int activationTime;
   // is this a node that was clicked on
   boolean wasClicked = false;
+
+  int ID;
 
   // Initializers
   MainNode(TwitterGraph theGraph) {
@@ -57,6 +66,7 @@ class MainNode extends Node {
   MainNode(TwitterGraph theGraph, float theX, float theY) {
     super(theX, theY);
     this.numConnections = 0;
+    //this.fadeCounter = int(f*100);
     graph = theGraph;
     init();
   }
@@ -83,14 +93,14 @@ class MainNode extends Node {
 
 
   //3D initializer
-  MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
-    super(theX, theY, theZ);
-    this.numConnections = 0;
-
-
-    graph = theGraph;
-    init();
-  }
+  /*MainNode(TwitterGraph theGraph, float theX, float theY, float theZ) {
+   super(theX, theY, theZ);
+   this.numConnections = 0;
+   
+   
+   graph = theGraph;
+   init();
+   }*/
 
 
 
@@ -126,6 +136,8 @@ class MainNode extends Node {
   ///
   void draw() {
 
+    //if (ns == i) diameter = 160; else diameter = 16;
+
 
     //If the display flag is true.
     if (displayed) {
@@ -134,38 +146,58 @@ class MainNode extends Node {
       // while loading draw grey ring around node
       d = diameter;
 
-      // hashtag drawing code.
-      if (hashtag) {
-        drawHashtagNode();
+      if (isHighlighted) {
+        drawTweetNodeHighlighted();
       } else {
         drawTweetNode();
       }
-
-      popStyle();
-
-
-      //Make 
-      if (numConnections<=2) {
-        lifeTime-=100;
-      } else {
-       lifeTime = fadeOutTime; 
-      }
     }
+
+
+
+
+
+
+    //Make 
+    ///if (numConnections<=2) {
+    if(!isHighlighted){
+    lifeTime-=200;
+    
+    }
+    //} else {
+    //lifeTime = fadeOutTime; 
+    //}
   }
 
+
   void drawHashtagNode() {
-    float d = diameter + 10*(numConnections-1);
+    //float d = 2;
+    float d = (diameter + 10*(numConnections-1)) * map(mouseX, 0, width, 0.1, 0.5);
     float alpha = map(lifeTime, fadeOutTime, 0, 255, 0);
     fill(255, alpha);
     ellipse(x, y, d, d);
   }
 
   void drawTweetNode() {
-    float d = diameter;
+    float d = diameter/10;
     float alpha = map(lifeTime, fadeOutTime, 0, 255, 0);
 
-    fill(ranCol, alpha);
-    ellipse(x, y, d, d);
+    //fill(ranCol, alpha);
+    //ellipse(x, y, d, d);
+    stroke(ranCol, alpha);
+    strokeWeight(d);
+    ellipse(x, y, 4, 4);
+  }
+
+  void drawTweetNodeHighlighted() {
+    float d = diameter/5;
+    float alpha = map(lifeTime, fadeOutTime, 0, 255, 0);
+
+    //fill(ranCol, alpha);
+    //ellipse(x, y, d, d);
+    stroke(ranCol, alpha);
+    strokeWeight(d);
+    ellipse(x, y, 15, 15);
   }
 
 
@@ -189,7 +221,6 @@ class MainNode extends Node {
       fill(255);
 
       text(id, x+(d/2+20)*tfactor, y+6*tfactor);
-
     }
   }
 
@@ -201,53 +232,59 @@ class MainNode extends Node {
     return this.locationID;
   }
 
-  float getTheta() {
+  //void triggerFadeOut() {
+  //  displayed = false;
 
-    return GenerativeDesign.cartesianToPolar(this.x, this.y)[1];
+  //  //Node itself
+  //  if (fadeCounter > 0) {
+  //    float alpha = map(fadeCounter, 1000, 0, 180, 0);
+  //    pushStyle();
+  //    //colorMode(HSB, 360, 100, 100);
+  //    float d;
+  //    // while loading draw grey ring around node
+  //    d = diameter;
+
+  //    // randomly coloured circle
+  //    if (hashtag) {
+  //      d = diameter + 10*(numConnections-1);
+
+  //      fill(255, alpha);
+  //      ellipse(x, y, d, d);
+  //    } else {
+  //      fill(ranCol);
+  //      ellipse(x, y, d, d);
+  //    }
+
+  //    popStyle();
+
+  //    //TEXT LABEL
+  //    // draw text fade out.
+  //    if (hashtag) {
+  //      textAlign(LEFT);
+  //      rectMode(CORNER);
+  //      float tfactor = 0.5;
+  //      activationTime = graph.getMillis();
+  //      float ts = textsize/pow(graph.zoom, 0.5) *tfactor;
+  //      textFont(graph.font, ts);
+  //      pushMatrix();
+  //      fill(0, alpha);
+  //      text(id, x+(d/2+20)*tfactor, y+6*tfactor);
+  //      popMatrix();
+  //      fadeCounter-=10;
+  //    }
+  //  } else {
+  //    graph.removeNode(this);
+  //  }
+  //}
+
+  int getAngle() {
+    //translate(width/2, height/2);
+    float a = atan2(this.y, this.x);
+    int angle = int(degrees(a));
+    return angle;
   }
-
-  void triggerFadeOut() {
-    displayed = false;
-
-    //Node itself
-    if (fadeCounter!=0) {
-      float alpha = map(fadeCounter, 1000, 0, 180, 0);
-      pushStyle();
-      //colorMode(HSB, 360, 100, 100);
-      float d;
-      // while loading draw grey ring around node
-      d = diameter;
-
-      // randomly coloured circle
-      if (hashtag) {
-        d = diameter + 10*(numConnections-1);
-
-        fill(255, alpha);
-        ellipse(x, y, d, d);
-      } else {
-        fill(ranCol);
-        ellipse(x, y, d, d);
-      }
-
-      popStyle();
-
-      //TEXT LABEL
-      // draw text fade out.
-      if (hashtag) {
-        textAlign(LEFT);
-        rectMode(CORNER);
-        float tfactor = 0.5;
-        activationTime = graph.getMillis();
-        float ts = textsize/pow(graph.zoom, 0.5) *tfactor;
-        textFont(graph.font, ts);
-        pushMatrix();
-        fill(0, alpha);
-        text(id, x+(d/2+20)*tfactor, y+6*tfactor);
-        popMatrix();
-        fadeCounter-=10;
-      }
-    } else {
-      graph.removeNode(this);
-    }
+  
+  void setText(String text){
+   this.text = text; 
   }
 }

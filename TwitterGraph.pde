@@ -8,6 +8,8 @@ class TwitterGraph {
   // we use an ArrayList because it is faster to append with new springs
   ArrayList springs = new ArrayList();
 
+  ArrayList triangles = new ArrayList();
+
   // hovered node
   Node rolloverNode = null;
   // node that is dragged with the mouse
@@ -15,8 +17,10 @@ class TwitterGraph {
   // node for which loading is in progress
   Node loadingNode = null;
 
+  int nodeSelector = 0;
 
-  ArrayList anchors = new ArrayList(); 
+
+  //ArrayList anchors = new ArrayList(); 
 
 
   // default parameters
@@ -83,8 +87,8 @@ class TwitterGraph {
       return null;
     }
   }
-  
-    //-------------MAIN NODE ADD & REMOVE----------------
+
+  //-------------MAIN NODE ADD & REMOVE----------------
   Node addNode(String theID, float theX, float theY, color sentiment) {
     // check if the node is already there
     Node findNode = (Node) nodeMap.get(theID);
@@ -101,8 +105,8 @@ class TwitterGraph {
       return null;
     }
   }
-  
-    //-------------MAIN NODE ADD & REMOVE----------------
+
+  //-------------MAIN NODE ADD & REMOVE----------------
   Node addHashtagNode(String hashtag, float theR, float theAngle) {
     // check if the node is already there
     MainNode findNode = (MainNode) nodeMap.get(hashtag);
@@ -114,7 +118,7 @@ class TwitterGraph {
       newNode.numConnections++;
       //Add Node Details to HashMap
       nodeMap.put(hashtag, newNode);
-     // addSpringToCircle(hashtag, points[0], points[1]);
+      // addSpringToCircle(hashtag, points[0], points[1]);
       return newNode;
     } else {
       findNode.numConnections++;
@@ -145,8 +149,8 @@ class TwitterGraph {
 
     return null;
   }
-  
-    Spring addWeakSpring(String fromID, String toID) {
+
+  Spring addWeakSpring(String fromID, String toID) {
     MainNode fromNode, toNode; 
     fromNode = (MainNode) nodeMap.get(fromID);
     toNode = (MainNode) nodeMap.get(toID);
@@ -181,8 +185,8 @@ class TwitterGraph {
 
     return null;
   }
-  
-   Spring addSpringToCircle(String id, float rad, float theta) {
+
+  Spring addSpringToCircle(String id, float rad, float theta) {
     MainNode node;
     node = (MainNode) nodeMap.get(id);
     PVector polar = new PVector(rad, theta);
@@ -375,12 +379,15 @@ class TwitterGraph {
     maxY = -Float.MAX_VALUE;
 
     // make an Array out of the values in nodeMap
-    Node[] nodes = (Node[]) nodeMap.values().toArray(new Node[0]);
+    MainNode[] nodes = (MainNode[]) nodeMap.values().toArray(new MainNode[0]);
 
 
     //Apply forces
     for (int i = 0; i < nodes.length; i++) {
-      nodes[i].attract(nodes);
+
+      if (nodes[i].isHighlighted==false) {
+        nodes[i].attract(nodes);
+      }
     }
 
     //Add springs
@@ -392,12 +399,14 @@ class TwitterGraph {
 
     //Call the update method on individual nodes
     for (int i = 0; i < nodes.length; i++) {
-      nodes[i].update();
+      if (nodes[i].isHighlighted == false) {
+        nodes[i].update();
 
-      minX = min(nodes[i].x, minX);
-      maxX = max(nodes[i].x, maxX);
-      minY = min(nodes[i].y, minY);
-      maxY = max(nodes[i].y, maxY);
+        minX = min(nodes[i].x, minX);
+        maxX = max(nodes[i].x, maxX);
+        minY = min(nodes[i].y, minY);
+        maxY = max(nodes[i].y, maxY);
+      }
     }
 
 
@@ -440,38 +449,70 @@ class TwitterGraph {
 
     //THIS LOADS THE DATA IN THE ORIGINAL
     Iterator iter = nodeMap.entrySet().iterator();
-    while (iter.hasNext ()) {
-      Map.Entry me = (Map.Entry) iter.next();
-      //MainNode node = (MainNode) me.getValue();
-      //node.loaderLoop();
-    }
 
+
+    ArrayList<PVector> points = new ArrayList<PVector>();
+    ArrayList<PVector> colors = new ArrayList<PVector>();
 
     // draw springs
+    // EDITED
     for (int i = 0; i < springs.size(); i++) {
       Spring s = (Spring) springs.get(i);
       if (s == null) break;
       MainNode from = (MainNode) s.getFromNode();
       stroke(from.ranCol);
       strokeWeight(lineWeight);
+      if (dist(mouseX-width/2, mouseY-height/2, s.getFromNode().x, s.getFromNode().y) < from.savedDiameter) {
+        from.diameter = from.savedDiameter*10;
+      } else {
+        from.diameter = from.savedDiameter;
+      }
+
+      if (!from.hashtag) {
+        points.add(new PVector(s.getFromNode().x, s.getFromNode().y));
+        colors.add(new PVector(red(from.ranCol), green(from.ranCol), red(from.ranCol)));
+      }
       //drawArrow((MainNode) s.fromNode,  s.toNode);
-      line(s.getFromNode().x, s.getFromNode().y, s.getToNode().x, s.getToNode().y);
+      //line(s.getFromNode().x, s.getFromNode().y, s.getToNode().x, s.getToNode().y);
       noStroke();
     }
+
+    if (points.size() > 2) triangles = Triangulate.triangulate(points);
+
+    // draw the mesh of triangles
+    stroke(255, 40);
+    noFill();
+    beginShape(TRIANGLES);
+
+    //println(triangles.size());
+
+    for (int i = 0; i < triangles.size(); i++) {
+      Triangle t = (Triangle)triangles.get(i);
+      vertex(t.p1.x, t.p1.y);
+      vertex(t.p2.x, t.p2.y);
+      vertex(t.p3.x, t.p3.y);
+    }
+
+    endShape();
 
     // draw nodes
     colorMode(RGB, 255, 255, 255, 100);
 
     iter = nodeMap.entrySet().iterator();
+    int i = 0;
     while (iter.hasNext ()) {
       Map.Entry me = (Map.Entry) iter.next();
 
       MainNode node = (MainNode) me.getValue();
       node.draw();
       node.drawLabel();
-      
-      if(node.lifeTime==0){removeNode(node);}
+      //println(node.locationID);
+
+      if (node.lifeTime<0) {
+        removeNode(node);
+      }
       // removeNode(node);
+      i++;
     }
 
     // draw node labels 
@@ -514,25 +555,72 @@ class TwitterGraph {
     }
   }
 
-  void drawCenter() {
+  //void checkAngles(int angle) {
+  //  Iterator iter = nodeMap.entrySet().iterator();
 
-    float d;
-    // while loading draw grey ring around node
-    d = nodeDiameter;
+  //  iter = nodeMap.entrySet().iterator();
+  //  while (iter.hasNext ()) {
+  //    Map.Entry me = (Map.Entry) iter.next();
 
-    pushStyle();
-     colorMode(RGB);
-    // white ring between center circle and link ring
-    fill(255, 131, 0);
-    ellipse(width/2, height/2, d, d);
+  //    MainNode node = (MainNode) me.getValue();
+  //     if (abs(node.getAngle() - angle) < 10) {
+  //      node.isHighlighted = true;
+  //     // println("Slider1 value = " + slider1);
 
-    // main dot
-    d = (nodeDiameter - 10);
-    fill(255);
-    ellipse(width/2, height/2, d, d);
-    popStyle();
+  //      //if (mousePressed) {
+  //      //  thc.isClicked = true;
+  //      //}
+  //    } else {
+  //      node.isHighlighted = false;
+  //    }
+  //  }
+  //}
+
+  ArrayList<MainNode> checkAngles(int angle) {
+    ArrayList<MainNode> nodes = new ArrayList<MainNode>();
+
+    Iterator iter = nodeMap.entrySet().iterator();
+
+    iter = nodeMap.entrySet().iterator();
+    while (iter.hasNext ()) {
+      Map.Entry me = (Map.Entry) iter.next();
+
+      MainNode node = (MainNode) me.getValue();
+      if (abs(node.getAngle() - angle) < 5) {
+        node.isHighlighted = true;
+        nodes.add(node);
+        // println("Slider1 value = " + slider1);
+
+        //if (mousePressed) {
+        //  thc.isClicked = true;
+        //}
+      } else {
+        node.isHighlighted = false;
+      }
+    }
+
+    return nodes;
   }
-  
+
+  void drawCenter() {
+    /*
+    float d;
+     // while loading draw grey ring around node
+     d = nodeDiameter;
+     
+     pushStyle();
+     colorMode(RGB);
+     // white ring between center circle and link ring
+     fill(255, 131, 0);
+     //ellipse(width/2, height/2, d, d);
+     
+     // main dot
+     d = (nodeDiameter - 10);
+     fill(255);
+     //ellipse(width/2, height/2, d, d);
+     popStyle();*/
+  }
+
   void drawArrow(MainNode n1, MainNode n2) {
 
     PVector d = new PVector(n2.x - n1.x, n2.y - n1.y);

@@ -1,8 +1,11 @@
 class Tweet {
+  
   color sentiment;
   String user;
   String text;
   int count = 0;
+  int percentageSentiment;
+    
   Tweet (String userName, String tweetText) {
     sentiment = getColor();
     user = userName;
@@ -61,19 +64,19 @@ class Tweet {
         //println("The server response is " + response);
         String resp = response.toString();
         if (resp.contains("Positive")) {
-          pushMatrix();
+          //pushMatrix();
           result = this.positive();
-          popMatrix();
+          //popMatrix();
         }
         if (resp.contains("Negative")) {
-          pushMatrix();
+          //pushMatrix();
           result = this.negative();
-          popMatrix();
+          //popMatrix();
         }
         if (resp.contains("Neutral")) {
-          pushMatrix();
+          //pushMatrix();
           result = this.neutral();
-          popMatrix();
+          //popMatrix();
         }
         response.setLength(0);
       }
@@ -99,8 +102,10 @@ class Tweet {
 
     //for positive tweets
     hue = random(90, 110);
-    sat = random(100, 200);
+    sat = 250;
     bright = 50 + hue;
+    
+    percentageSentiment = 100;
 
     return color(hue, sat, bright);
   } 
@@ -111,10 +116,13 @@ class Tweet {
     //for negative tweets
     hue = random(-18, 20);
     bright = 200 + abs(hue);
-    sat = random(100, 255);
+    sat = 250;
     if (hue<0) { 
       hue = 255 + hue;
     };
+    
+    percentageSentiment = 0;
+    
     return color(hue, sat, bright);
   }
 
@@ -125,6 +133,7 @@ class Tweet {
     hue = random(20, 120);
     sat = random(0, 70);
     bright = 200;
+    percentageSentiment = 50;
     return color(hue, sat, bright);
   }
 }
